@@ -1,0 +1,57 @@
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif}
+/* ---------- Login ---------- */
+.login-wrap{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#e6f4f4,#f7fbfb)}
+.login-card{background:#fff;padding:32px;border-radius:14px;box-shadow:0 8px 30px #0a4d5a22;width:min(360px,92vw);display:grid;gap:12px}
+.login-card h1{margin:0;color:#0a7f8c}.login-card p{margin:0 0 8px;color:#567}
+.login-card input{padding:12px;border:1px solid #bcd;border-radius:8px;font-size:16px}
+.login-card button{padding:12px;border:0;border-radius:8px;background:#0a7f8c;color:#fff;font-size:16px;cursor:pointer}
+.err{color:#b00020;font-size:14px}
+
+/* ---------- SENIOR: 90s Windows-95 style ---------- */
+.s-desktop{min-height:100vh;background:#008080;padding:10px;font-family:"Comic Sans MS","Trebuchet MS",Arial,sans-serif;font-size:20px;color:#000}
+.win{background:#c0c0c0;border:3px outset #fff;max-width:900px;margin:0 auto;box-shadow:4px 4px 0 #0008}
+.titlebar{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;padding:6px 10px;font-weight:bold;display:flex;justify-content:space-between;font-size:22px}
+.marquee{background:#000;color:#0f0;font-family:"Courier New",monospace;overflow:hidden;white-space:nowrap;padding:4px}
+.marquee span{display:inline-block;padding-left:100%;animation:scroll 18s linear infinite}
+@keyframes scroll{to{transform:translateX(-100%)}}
+.win-body{padding:14px;display:grid;gap:14px;position:relative}
+.s-banner{background:#ffff99;border:3px ridge #c00;padding:12px;font-weight:bold;cursor:pointer}
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.s-btn{font:inherit;font-weight:bold;font-size:26px;padding:26px 10px;border:4px outset #fff;cursor:pointer;background:#c0c0c0;color:#000;min-height:110px;text-shadow:1px 1px #fff8}
+.s-btn:active{border-style:inset}.s-btn:disabled{opacity:.6}
+.s-btn.green{background:#33cc33;grid-column:1/-1;font-size:32px;min-height:140px}.s-btn.green.rec{background:#ff6600;animation:blink .8s steps(2) infinite}
+.s-btn.blue{background:#3399ff}.s-btn.yellow{background:#ffdd33}.s-btn.red{background:#ff3333;color:#fff;text-shadow:2px 2px #800}
+@keyframes blink{50%{background:#ffcc00}}
+fieldset{border:3px groove #fff;background:#d8d8d8;padding:10px}legend{font-weight:bold;background:#c0c0c0;padding:0 6px}
+.s-rem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px;border-bottom:2px dotted #888}.s-rem.done{text-decoration:line-through;opacity:.55}
+.s-rem button,fieldset form button,.statusbar button{font:inherit;border:3px outset #fff;background:#c0c0c0;padding:6px 14px;cursor:pointer}
+.s-log{background:#fff;border:3px inset #888;height:170px;overflow:auto;padding:6px;margin-bottom:8px}.s-log p{margin:4px 0}
+fieldset form{display:flex;gap:6px}fieldset input{flex:1;font:inherit;border:3px inset #888;padding:6px}
+.statusbar{border-top:3px groove #fff;padding:6px 10px;display:flex;justify-content:space-between;font-size:16px;align-items:center}
+.s-video{width:100%;max-height:60vh;background:#000;border:4px inset #888}.s-self{position:absolute;right:24px;top:24px;width:150px;border:3px outset #fff;background:#000}
+@media(max-width:560px){.s-grid{grid-template-columns:1fr}.s-desktop{font-size:18px}}
+
+/* ---------- CAREGIVER: clean medical ---------- */
+.c-app{--teal:#0a7f8c;--mint:#e6f4f4;--ink:#1c2b36;--mut:#6b7f8c;min-height:100vh;background:#f3f8fa;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif}
+.c-head{background:#fff;border-bottom:3px solid var(--teal);display:flex;justify-content:space-between;align-items:center;padding:12px 24px;flex-wrap:wrap;gap:6px}
+.logo{font-size:22px;color:var(--teal)}
+.c-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:24px;max-width:1100px;margin:0 auto}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #0a4d5a14;border-top:4px solid var(--teal)}
+.card h3{margin:0 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.card.wide{grid-column:1/-1}.card.wide{grid-column:1/3}
+.stat .big{font-size:38px;font-weight:700}.ok{color:#1a9a5a}.stat small{display:block;color:var(--mut);margin-top:6px}
+.ecg{width:100%;height:40px;stroke:#1a9a5a;stroke-dasharray:600;animation:ecg 3s linear infinite}@keyframes ecg{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--mut);font-weight:600;padding:8px;border-bottom:2px solid var(--mint)}td{padding:10px 8px;border-bottom:1px solid #edf3f5}
+.empty{text-align:center;color:var(--mut)}
+.pill{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--mint);color:var(--teal)}
+.pill.MEDICATION{background:#e3f0ff;color:#1c62b8}.pill.APPOINTMENT{background:#f1e8ff;color:#6b3fb0}.pill.OK{background:#dff5e8;color:#1a9a5a}.pill.WAIT{background:#fff1d6;color:#b36b00}
+.c-btn{background:var(--teal);color:#fff;border:0;padding:10px 18px;border-radius:8px;font-size:15px;cursor:pointer}.c-btn:hover{filter:brightness(1.1)}
+.c-btn.danger{background:#d32f2f}.c-btn.ghost{background:transparent;color:#fff;border:1px solid #fff;margin-left:8px}
+.link{background:none;border:0;color:var(--teal);cursor:pointer;text-decoration:underline;font-size:inherit}
+.c-form{display:grid;gap:10px}.c-form label{display:grid;gap:4px;font-size:13px;color:var(--mut)}
+.c-form input,.c-form select{padding:9px;border:1px solid #c5d6dc;border-radius:6px;font-size:14px}.c-form .chk{display:flex;align-items:center;gap:6px}
+.c-ring{background:var(--teal);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.c-alert{background:#d32f2f;color:#fff;padding:14px 24px;animation:pulse 1s infinite alternate}@keyframes pulse{to{background:#a31515}}
+.c-video{position:relative;padding:24px;text-align:center}.c-remote{width:100%;max-width:900px;border-radius:12px;background:#000}.c-self{position:absolute;right:40px;top:40px;width:180px;border-radius:8px;border:2px solid #fff}
+.c-video .c-btn{display:block;margin:16px auto}
+@media(max-width:800px){.c-grid{grid-template-columns:1fr}.card.wide{grid-column:auto;overflow-x:auto}}

@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: elderly-agent-ai
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/eldercare?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:10781078}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5s
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+
+security:
+  jwt:
+    # 256-bit secret - MUST be overridden via env var in production
+    secret: ${JWT_SECRET:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:720}
+
+ollama:
+  base-url: ${OLLAMA_URL:http://localhost:11434}
+  model: ${OLLAMA_MODEL:qwen2.5-coder:1.5b}
+  chat-timeout-seconds: 120
+
+voice:
+  # Offline voice sidecar (Python + Vosk STT + Piper TTS). See scripts/voice_sidecar.py
+  sidecar-url: ${VOICE_SIDECAR_URL:http://localhost:5055}
+
+emergency:
+  # Phone number dialed/alerted on SOS. Kept out of the DB on purpose.
+  contact-number: ${EMERGENCY_CONTACT:+10000000000}
+  caregiver-user: ${CAREGIVER_USERNAME:caregiver}
+
+rate-limit:
+  chat-per-minute: 20
+  login-per-minute: 5
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:8080,http://localhost:3000}
+
+logging:
+  level:
+    com.eldercare: INFO

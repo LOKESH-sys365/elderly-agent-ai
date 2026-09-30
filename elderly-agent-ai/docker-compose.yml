@@ -1,0 +1,36 @@
+version: "3.9"
+# Infrastructure only. The Spring Boot app and Ollama run on the host (CPU-only).
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: eldercare-mysql
+    environment:
+      MYSQL_DATABASE: eldercare
+      MYSQL_USER: eldercare
+      MYSQL_PASSWORD: change_me_in_production
+      MYSQL_ROOT_PASSWORD: root_change_me
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: eldercare-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+
+volumes:
+  mysql-data:
+  redis-data:

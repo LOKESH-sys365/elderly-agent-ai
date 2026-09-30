@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maya - Your Assistant</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #fdf6ec, #f0f7ff);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px; color: #2c3e50;
+  }
+  h1 { font-size: 42px; margin-bottom: 4px; }
+  .sub { font-size: 22px; color: #6b7c8d; margin-bottom: 24px; }
+  .card {
+    background: white; border-radius: 24px; padding: 28px;
+    width: 100%; max-width: 640px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  button {
+    border: none; border-radius: 20px; cursor: pointer;
+    font-size: 30px; font-weight: 700; padding: 26px;
+    width: 100%; transition: transform .1s;
+  }
+  button:active { transform: scale(.97); }
+  .talk  { background: #2e86de; color: white; }
+  .talk.recording { background: #e74c3c; }
+  .call  { background: #27ae60; color: white; }
+  .sos   { background: #c0392b; color: white; }
+  .login-row { display: flex; flex-direction: column; gap: 12px; }
+  input {
+    font-size: 24px; padding: 18px; border-radius: 16px;
+    border: 2px solid #d5dce4; width: 100%;
+  }
+  .reply {
+    font-size: 28px; line-height: 1.5; min-height: 90px;
+    background: #f8fafc; border-radius: 16px; padding: 22px;
+  }
+  .hint { font-size: 20px; color: #8395a7; text-align: center; }
+  #status { font-size: 22px; color: #576574; text-align: center; min-height: 30px; }
+  video { width: 100%; border-radius: 16px; background: #000; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Hi, I'm Maya</h1>
+<div class="sub">Press the blue button and just talk</div>
+
+<div class="card" id="loginCard">
+  <div class="login-row">
+    <input id="username" placeholder="Your name" autocomplete="username">
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="call" onclick="login()">Sign In</button>
+  </div>
+  <div class="hint">Your family set up your account. Ask them if you need help.</div>
+</div>
+
+<div class="card hidden" id="mainCard">
+  <div class="reply" id="reply">How are you feeling today?</div>
+  <div id="status"></div>
+  <button id="talkBtn" class="talk" onmousedown="startRec()" onmouseup="stopRec()" ontouchstart="startRec()" ontouchend="stopRec()">&#127908; Hold to Talk</button>
+  <button class="call" onclick="startCall()">&#128249; Call My Family</button>
+  <button class="sos" onclick="sos()">&#9888; I NEED HELP NOW</button>
+  <video id="remote" autoplay playsinline class="hidden"></video>
+</div>
+
+<script>
+let token = null, rec = null, chunks = [], pc = null, ws = null, me = null;
+
+async function login() {
+  const r = await fetch('/api/auth/login', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: u('username'), password: u('password')})
+  });
+  if (!r.ok) { alert('Sign in did not work. Please try again.'); return; }
+  const d = await r.json();
+  token = d.token; me = d.username;
+  document.getElementById('loginCard').classList.add('hidden');
+  document.getElementById('mainCard').classList.remove('hidden');
+  connectWs();
+}
+function u(id) { return document.getElementById(id).value.trim(); }
+function say(t) { document.getElementById('reply').textContent = t; }
+function status(t) { document.getElementById('status').textContent = t || ''; }
+
+function connectWs() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws/signal?token=${encodeURIComponent(token)}`);
+  ws.onmessage = async (ev) => {
+    const m = JSON.parse(ev.data);
+    if (m.type === 'ring') {
+      if (confirm(`${m.data.fromName || m.data.from} is calling you. Answer?`)) {
+        await answerCall(m.data.callId, m.from);
+      }
+    }
+  };
+}
+
+async function startRec() {
+  if (rec) return;
+  const btn = document.getElementById('talkBtn');
+  btn.classList.add('recording'); btn.innerHTML = '&#9210; Listening...';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    rec = new MediaRecorder(stream);
+    chunks = [];
+    rec.ondataavailable = e => chunks.push(e.data);
+    rec.start();
+  } catch { status('Please allow the microphone.'); btn.classList.remove('recording'); }
+}
+
+async function stopRec() {
+  const btn = document.getElementById('talkBtn');
+  if (!rec) return;
+  rec.onstop = async () => {
+    streamStop();
+    btn.classList.remove('recording'); btn.innerHTML = '&#127908; Hold to Talk';
+    status('Thinking...');
+    const blob = new Blob(chunks, {type: 'audio/webm'});
+    const fd = new FormData();
+    fd.append('audio', blob, 'voice.webm');
+    const r = await fetch('/api/voice/talk', {method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token}, body: fd});
+    if (!r.ok) { status(''); say('Sorry, something went wrong. Try again.'); return; }
+    const text = r.headers.get('X-Transcript');
+    if (text) status('You said: ' + decodeURIComponent(text));
+    const wav = await r.blob();
+    say(''); status('');
+    new Audio(URL.createObjectURL(wav)).play();
+  };
+  rec.stop();
+}
+function streamStop() { rec.stream.getTracks().forEach(t => t.stop()); rec = null; }
+
+async function sos() {
+  await fetch('/api/emergency/sos', {method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+    body: JSON.stringify({reason: 'SOS button pressed on screen'})});
+  say('Help has been called. Stay calm. Your family is being alerted.');
+}
+
+/* ---- Family video call (WebRTC, works on your home network) ---- */
+async function startCall() {
+  status('Calling your family...');
+  const r = await fetch('/api/calls/start', {method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token}});
+  const d = await r.json();
+  say(d.message || 'Calling...');
+}
+
+async function answerCall(callId, peer) {
+  status('Connecting...');
+  pc = new RTCPeerConnection();
+  pc.ontrack = e => { const v = document.getElementById('remote'); v.srcObject = e.streams[0]; v.classList.remove('hidden'); };
+  pc.onicecandidate = e => { if (e.candidate) wsSend('ice', peer, {candidate: e.candidate}); };
+  const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+  stream.getTracks().forEach(t => pc.addTrack(t, stream));
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  wsSend('offer', peer, {sdp: offer});
+}
+
+function wsSend(type, to, data) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({type, to, data}));
+}
+// handle signaling replies
+const _oldWs = connectWs;
+connectWs = function() {
+  _oldWs();
+  ws.addEventListener('message', async (ev) => {
+    const m = JSON.parse(ev.data);
+    if (m.type === 'answer' && pc) await pc.setRemoteDescription(m.data.sdp);
+    if (m.type === 'ice' && pc) await pc.addIceCandidate(m.data.candidate);
+    if (m.type === 'accept') status('Connected. Say hello!');
+  });
+};
+</script>
+</body>
+</html>
